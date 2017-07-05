@@ -1,0 +1,24 @@
+---
+- hosts: SynergyServers
+  become: true
+  tasks:
+  - name: Installing fcoe-utils
+    yum:
+     name: fcoe-utils 
+     update_cache: yes
+  - name: Create interface file cfg-ens3f2 for FCOE
+    raw: cp /etc/fcoe/cfg-ethx /etc/fcoe/cfg-ens3f2
+  - name: Create interface file cfg-ens3f3 for FCOE
+    raw: cp /etc/fcoe/cfg-ethx /etc/fcoe/cfg-ens3f3
+  - name: Changing DCB_REQUIRED to NO in cfg-ens3f2
+    raw: sed -i 's/DCB_REQUIRED="yes"/DCB_REQUIRED="no"/g' /etc/fcoe/cfg-ens3f2
+  - name: Changing DCB_REQUIRED to NO in cfg-ens3f3
+    raw: sed -i 's/DCB_REQUIRED="yes"/DCB_REQUIRED="no"/g' /etc/fcoe/cfg-ens3f3
+  - name: Enable and Start the lldpad service
+    service: name=lldpad state=started enabled=yes
+  - name: Bring Up FC interface ens3f2
+    raw: ip link set dev eth1 up
+  - name: Bring Up FC interface ens3f3
+    raw: ip link set dev eth1 up
+  - name: Enable and Start the fcoe service
+    service: name=fcoe state=started enabled=yes
